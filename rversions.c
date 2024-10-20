@@ -3,10 +3,12 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <string.h>
-#include <netinet/ip.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <signal.h>
 #include "protocol.h"
-#include "server.h"
+#include "client.h"
+
 /**
  * @brief Funcion para manejar adecuadaente las señales SIGINT y SIGTERM
  * 
@@ -17,7 +19,6 @@ void handle_signal(int signal);
 * @brief Imprime la ayuda
 */
 void usage();
-
 int terminated = 0;/*Bandera que determina la ejecución del proceso*/
 
 int main(int argc,char * argv[]){
@@ -25,18 +26,18 @@ int main(int argc,char * argv[]){
     signal(SIGINT,handle_signal);
     signal(SIGTERM,handle_signal);
     //Se comprueba que se ingresaron los argumentos correctos
-    if(argc != 2){
+    if(argc != 3){
         usage();
         exit(EXIT_FAILURE);
     }
-    int client_socket = getConnection(argv);
+    int c = setConnection(argv);
     while(!terminated){
         //TODO: Comunicacion
         break;
     }
-    // 7. Cerrar el socket c
-    printf("Cerrando sockets...\n");
-    close(client_socket);
+    // 4. Cerrar el socket
+    printf("Cerrando el socket\n");
+    close(c);
     exit(EXIT_SUCCESS);
 }
 void handle_signal(int signal){
@@ -44,8 +45,8 @@ void handle_signal(int signal){
     terminated = 1; 
 }
 void usage(){
-    printf("Uso: ./rversionsd <puerto>\n");
+    printf("Uso: ./rversions <ip> <puerto>\n");
+    printf("ip: Dirección IP del servidor\n");
     printf("puerto: Puerto en el que el servidor estará escuchando\n");
-    printf("Ejemplo: ./rversionsd 1234\n");
-
+    printf("Ejemplo: ./rversions 192.0.0.0 1234\n");
 }
