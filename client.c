@@ -11,14 +11,22 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "client.h"
+/**
+ * @brief Valida si el comando ingresado es valido
+ * 
+ * @param command Comando ingresado
+ * @return int 0 si es invalido, 1 si es valido
+ */
+int isValid(char * command);
 
-int setConnection(char * argv[]) {
+int set_connection(char * argv[]) {
     //Obtener el puerto
     int puerto = atoi(argv[2]);
     //Obtener la ip
@@ -46,4 +54,28 @@ int setConnection(char * argv[]) {
     } 
     printf("Conectado al servidor %s:%d\n",ip,puerto);    
     return c;
+}
+char * read_command(){
+    char * command = (char *)malloc(100*sizeof(char));
+    do{
+        printf("Ingrese el comando: ");
+        fgets(command,100,stdin);
+    }while(!isValid(command));
+    return command;
+}
+int isValid(char * command){
+    char * argv[3];
+    char * str_copy = strdup(command);
+    char * token = strtok(str_copy," "); //Se obtiene el primer token del comando (debería ser add, get o list)
+    int argc = 0; //Contador de argumentos
+    while(token!=NULL){
+        argv[argc] = token;
+        token = strtok(NULL," ");
+        argc++;
+    }
+    if((argc==3 && EQUALS(argv[0],"add")) || (argc==3 && (EQUALS(argv[0],"get"))) || (argc==2 && EQUALS(argv[0],"list"))|| (argc==1 && EQUALS(argv[0],"list"))){
+        return 1;
+    }
+    printf("Comando no válido\n");
+    return 0;
 }

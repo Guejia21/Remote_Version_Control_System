@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <netinet/ip.h>
+#define EQUALS(s1, s2) (strcmp(s1, s2) == 0) /**< Verdadero si dos cadenas son iguales.*/
 
 /**
  * @brief Establece una conexión con el servidor
@@ -24,6 +25,11 @@
  * @param argv Parámetros de la línea de comandos
  * @return int Socket conectado al servidor
  */
-int setConnection(char * argv[]);
-
+int set_connection(char * argv[]);
+/**
+ * @brief Lee y verifica un comando de la entrada estándar
+ * 
+ * @return char* Comando validado
+ */
+char * read_command();
 #endif

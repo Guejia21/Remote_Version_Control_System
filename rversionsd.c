@@ -32,6 +32,9 @@ int main(int argc,char * argv[]){
     int client_socket = getConnection(argv);
     while(!terminated){
         //TODO: Comunicacion
+        if(!recieve_message(client_socket,"Cliente")){
+            break;
+        }
         break;
     }
     // 7. Cerrar el socket c

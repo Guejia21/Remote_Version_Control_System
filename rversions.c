@@ -30,8 +30,12 @@ int main(int argc,char * argv[]){
         usage();
         exit(EXIT_FAILURE);
     }
-    int c = setConnection(argv);
+    int c = set_connection(argv);
     while(!terminated){
+        char* command = read_command();
+        if(!send_message(c,command)){
+            break;
+        }
         //TODO: Comunicacion
         break;
     }
