@@ -16,7 +16,7 @@ void handle_signal(int signal);
 /**
 * @brief Imprime la ayuda
 */
-void usage();
+void usageServer();
 
 int terminated = 0;/*Bandera que determina la ejecución del proceso*/
 
@@ -26,16 +26,17 @@ int main(int argc,char * argv[]){
     signal(SIGTERM,handle_signal);
     //Se comprueba que se ingresaron los argumentos correctos
     if(argc != 2){
-        usage();
+        usageServer();
         exit(EXIT_FAILURE);
     }
     int client_socket = getConnection(argv);
+    char buf[BUF_SIZE];
     while(!terminated){
         //TODO: Comunicacion
-        if(!recieve_message(client_socket,"Cliente")){
+        if(!recieve_message(client_socket,"Cliente",buf)){
             break;
         }
-        break;
+        executeCommand(buf,client_socket);
     }
     // 7. Cerrar el socket c
     printf("Cerrando sockets...\n");
@@ -46,7 +47,7 @@ void handle_signal(int signal){
     printf("Se ha recibido la señal %d\n",signal);
     terminated = 1; 
 }
-void usage(){
+void usageServer(){
     printf("Uso: ./rversionsd <puerto>\n");
     printf("puerto: Puerto en el que el servidor estará escuchando\n");
     printf("Ejemplo: ./rversionsd 1234\n");

@@ -1,6 +1,6 @@
-all: rversions.o rversionsd.o server.o client.o protocol.o sha256.o
-	gcc -o rversions rversions.o client.o protocol.o sha256.o
-	gcc -o rversionsd rversionsd.o server.c protocol.o sha256.o
+all: rversions.o rversionsd.o server.o client.o protocol.o sha256.o utilities.o
+	gcc -o rversions rversions.o client.o protocol.o sha256.o utilities.o
+	gcc -o rversionsd rversionsd.o server.c protocol.o sha256.o utilities.o
 %.o: %.c
 	gcc -c -o $@ $<
 clean:

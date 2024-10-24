@@ -26,8 +26,10 @@ int send_message(int s,char * msg);
  * @brief Recibe un mensaje
  * 
  * @param s Socket del que se recibe el mensaje
+ * @param origen Origen del mensaje
+ * @param buf Buffer donde se almacena el mensaje
  * @return int 0 si se recibio el saludo, -1 si hubo un error
  */
-int recieve_message(int s, char* origen);
+int recieve_message(int s, char* origen,char* buf);
 
 #endif

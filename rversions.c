@@ -8,7 +8,7 @@
 #include <signal.h>
 #include "protocol.h"
 #include "client.h"
-
+#include "utilities.h"
 /**
  * @brief Funcion para manejar adecuadaente las señales SIGINT y SIGTERM
  * 
@@ -18,7 +18,7 @@ void handle_signal(int signal);
 /**
 * @brief Imprime la ayuda
 */
-void usage();
+void usageClient();
 int terminated = 0;/*Bandera que determina la ejecución del proceso*/
 
 int main(int argc,char * argv[]){
@@ -27,17 +27,16 @@ int main(int argc,char * argv[]){
     signal(SIGTERM,handle_signal);
     //Se comprueba que se ingresaron los argumentos correctos
     if(argc != 3){
-        usage();
+        usageClient();
         exit(EXIT_FAILURE);
     }
     int c = set_connection(argv);
     while(!terminated){
         char* command = read_command();
-        if(!send_message(c,command)){
+        if(!send_message(c,command) || EQUALS(command,"exit\n")){
             break;
         }
-        //TODO: Comunicacion
-        break;
+        if(!get_response(c)) continue;
     }
     // 4. Cerrar el socket
     printf("Cerrando el socket\n");
@@ -48,7 +47,7 @@ void handle_signal(int signal){
     printf("Se ha recibido la señal %d\n",signal);
     terminated = 1; 
 }
-void usage(){
+void usageClient(){
     printf("Uso: ./rversions <ip> <puerto>\n");
     printf("ip: Dirección IP del servidor\n");
     printf("puerto: Puerto en el que el servidor estará escuchando\n");

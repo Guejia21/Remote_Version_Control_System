@@ -17,7 +17,7 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <netinet/ip.h>
-
+#include "protocol.h"
 /**
  * @brief Obtiene una conexión con el cliente
  * 
@@ -25,5 +25,12 @@
  * @return int Socket del cliente
  */
 int getConnection(char * argv[]);
+/**
+ * @brief Ejecuta un comando
+ * 
+ * @param command Comando a ejecutar
+ * @param c Socket del cliente
+ */
+void executeCommand(char * command, int c);
 
 #endif

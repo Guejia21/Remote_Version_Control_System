@@ -18,6 +18,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "client.h"
+#include "protocol.h"
+#include "utilities.h"
 /**
  * @brief Valida si el comando ingresado es valido
  * 
@@ -25,6 +27,10 @@
  * @return int 0 si es invalido, 1 si es valido
  */
 int isValid(char * command);
+/**
+ * @brief Imprime la ayuda
+ */
+void usageRVersions();
 
 int set_connection(char * argv[]) {
     //Obtener el puerto
@@ -64,18 +70,28 @@ char * read_command(){
     return command;
 }
 int isValid(char * command){
-    char * argv[3];
-    char * str_copy = strdup(command);
-    char * token = strtok(str_copy," "); //Se obtiene el primer token del comando (debería ser add, get o list)
-    int argc = 0; //Contador de argumentos
-    while(token!=NULL){
-        argv[argc] = token;
-        token = strtok(NULL," ");
-        argc++;
-    }
-    if((argc==3 && EQUALS(argv[0],"add")) || (argc==3 && (EQUALS(argv[0],"get"))) || (argc==2 && EQUALS(argv[0],"list"))|| (argc==1 && EQUALS(argv[0],"list"))){
+    int argc=0;
+    char ** argv = split_command(command,&argc);
+    if((argc==3 && EQUALS(argv[0],"add")) || (argc==3 && (EQUALS(argv[0],"get"))) || (argc==2 && EQUALS(argv[0],"list"))|| (argc==1 && EQUALS(argv[0],"list\n")||(argc==1 && EQUALS(argv[0],"exit\n")))){
         return 1;
     }
-    printf("Comando no válido\n");
+    usageRVersions();
     return 0;
+}
+int get_response(int c){
+    char buf[BUF_SIZE];
+    int argc=0;
+    if(!recieve_message(c,"Server",buf)){
+        return 0;
+    }
+    char ** argv = split_command(buf,&argc);
+    if(EQUALS(buf,"Verificando si el archivo existe...")){
+        printf("Vamos bien hasta aquí\n");
+    }
+}
+void usageRVersions(){
+    printf("Uso:\n   add ARCHIVO \"Comentario\" : Adiciona una version del archivo al repositorio\n");
+    printf("    list ARCHIVO             : Lista las versiones del archivo existentes\n");
+    printf("    list                     : Lista todos los archivos almacenados en el repositorio\n");
+    printf("    get NUMBER ARCHIVO       : Obtiene una version del archivo del repositorio\n");
 }

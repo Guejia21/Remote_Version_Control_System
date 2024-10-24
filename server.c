@@ -10,7 +10,7 @@
  * 
  */
 #include "server.h"
-
+#include "utilities.h"
 int getConnection(char * argv[]) {
     //1. Obtener el puerto del argumento
     int puerto = atoi(argv[1]);
@@ -49,4 +49,11 @@ int getConnection(char * argv[]) {
     printf("Conexión aceptada\n");
     close(s);
     return c;
+}
+void executeCommand(char * command, int c){
+    int argc=0;
+    char ** argv = split_command(command,&argc);
+    if(EQUALS(argv[0],"add")){
+        send_message(c,"Verificando si el archivo existe...");
+    }
 }

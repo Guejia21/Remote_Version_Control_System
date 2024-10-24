@@ -18,12 +18,11 @@
 int send_message(int s,char * msg){
     if(write(s,msg,strlen(msg))==-1){
         perror("Error al enviar el saludo");
-        return -1;
+        return 0;
     }
-    return 0;
+    return 1;
 }
-int recieve_message(int s, char* origen){
-    char buf[BUF_SIZE]; /*Reservar memoria para el buffer*/
+int recieve_message(int s, char* origen,char* buf){
     int numBytes;
     if((numBytes=read(s,buf,BUF_SIZE-1))==-1){
         perror("Error al recibir el saludo");
@@ -32,13 +31,13 @@ int recieve_message(int s, char* origen){
     if(numBytes == 0) {
         // El cliente ha cerrado la conexión
         printf("El cliente ha cerrado la conexión\n");
-        return -1;
+        return 0;
     }
     buf[numBytes]='\0';
-    if(strcmp(origen,"Cliente")==0 && strncmp(buf,"terminar",8)==0){
+    if(strcmp(origen,"Cliente")==0 && strncmp(buf,"exit",8)==0){
         printf("El cliente ha decidido cerrar la conexión\n");
-        return -1;
+        return 0;
     }
     printf("%s: %s",origen,buf);
-    return 0;
+    return 1;
 }
