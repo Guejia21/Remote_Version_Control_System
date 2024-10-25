@@ -11,13 +11,17 @@
  */
 #ifndef CLIENT_H
 #define CLIENT_H
-#include <stdio.h>
-#include <stdlib.h>
+
 #include <unistd.h>
 #include <sys/socket.h>
 #include <string.h>
-#include <netinet/ip.h>
-
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/stat.h>
+#include "client.h"
+#include "protocol.h"
+#include "utilities.h"
+#include "sha256.h"
 /**
  * @brief Establece una conexión con el servidor
  * 
@@ -35,7 +39,9 @@ char * read_command();
  * @brief Espera por la respuesta del servidor
  * 
  * @param c Socket conectado al servidor
+ * @param command Comando enviado
  * @return int 0 si la conexión se cerró, 1 si se recibió una respuesta
  */
-int get_response(int c);
+int get_response(int c, char * command);
+
 #endif

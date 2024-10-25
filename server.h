@@ -17,7 +17,16 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <netinet/ip.h>
+#include <fcntl.h>
 #include "protocol.h"
+#define VERSIONS_DB "versions.db" /**< Nombre de la base de datos de versiones. */
+#define VERSIONS_DIR ".versions" /**< Directorio del repositorio. */
+#define VERSIONS_DB_PATH VERSIONS_DIR "/" VERSIONS_DB /**< Ruta completa de la base de datos.*/
+/**
+ * @brief Configura el servidor
+ * 
+ */
+void configureServer();
 /**
  * @brief Obtiene una conexión con el cliente
  * 
@@ -30,7 +39,8 @@ int getConnection(char * argv[]);
  * 
  * @param command Comando a ejecutar
  * @param c Socket del cliente
+ * @return int 0 si la conexión se cerró, 1 si se ejecutó el comando
  */
-void executeCommand(char * command, int c);
+int executeCommand(char * command, int c);
 
 #endif

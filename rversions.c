@@ -36,7 +36,7 @@ int main(int argc,char * argv[]){
         if(!send_message(c,command) || EQUALS(command,"exit\n")){
             break;
         }
-        if(!get_response(c)) continue;
+        if(!get_response(c,command)) continue;
     }
     // 4. Cerrar el socket
     printf("Cerrando el socket\n");

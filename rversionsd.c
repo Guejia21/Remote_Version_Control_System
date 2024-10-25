@@ -23,12 +23,13 @@ int terminated = 0;/*Bandera que determina la ejecución del proceso*/
 int main(int argc,char * argv[]){
     //0. Instalar los manejadores para SIGINT, SIGTERM
     signal(SIGINT,handle_signal);
-    signal(SIGTERM,handle_signal);
+    signal(SIGTERM,handle_signal);    
     //Se comprueba que se ingresaron los argumentos correctos
     if(argc != 2){
         usageServer();
         exit(EXIT_FAILURE);
     }
+    configureServer();
     int client_socket = getConnection(argv);
     char buf[BUF_SIZE];
     while(!terminated){
