@@ -53,7 +53,6 @@ int getConnection(char * argv[]) {
     addr_server.sin_family=AF_INET;
     addr_server.sin_port=htons(puerto);
     addr_server.sin_addr.s_addr=INADDR_ANY;
-    bzero(&(addr_server.sin_zero),8);
     if(bind(s,(struct sockaddr *)&addr_server,sizeof(struct sockaddr_in))== -1){
         perror("Error al asignar la dirección al socket");
         exit(EXIT_FAILURE);
@@ -88,7 +87,7 @@ int executeCommand(char * command, int c){
         if(!recieve_file_version(&v,c)){
             return 0;
         }
-        if(!send_message(c,"Archivo recibido, verificando si ya existe una version con el mismo hash...")){
+        if(!send_message(c,"Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...")){
             return 0;
         }
         //Se verifica si ya existe una versión con el mismo hash
@@ -100,20 +99,24 @@ int executeCommand(char * command, int c){
             }
             return VERSION_ALREADY_EXISTS;
         }
-        if(!send_message(c,"Guardando la versión en la base de datos...")){
+        if(!send_message(c,"Recibiendo archivo...")){
             return 0;
         }
         char dst_filename[PATH_MAX];
 	    snprintf(dst_filename, PATH_MAX, "%s/%s", VERSIONS_DIR, v.hash);
         if(!recieve_file(c,dst_filename)) return 0;
-        printf("Archivo recibido\n");
+        if(!send_message(c,"Arhivo recibido...")) return 0;
+        
 
     }
 }
 return_code version_exists(char * filename, char * hash) {
 	FILE *file;
 	file = fopen(VERSIONS_DB_PATH,"r"); //Abre la BD
-	if(file == NULL) return VERSION_ERROR; 
+	if(file == NULL){
+        perror("Error al abrir la base de datos");
+        return VERSION_ERROR; 
+    } 
 	file_version r; //Estructura que recibe cada archivo guardado en la BD
 	while(!feof(file)){ //Se lee todo el archivo
 		if(fread(&r,sizeof(file_version),1,file)!=1) break; //Se lee un solo elemento de tamaño (file_version)

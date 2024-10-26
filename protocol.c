@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "protocol.h"
+#include "utilities.h"
 
 int send_message(int s,char * msg){
     if(write(s,msg,strlen(msg))==-1){
@@ -62,45 +63,55 @@ int send_file(int s, char * source){
         perror("Error al abrir el archivo");
         return 0;
     }
+    // Primero obtenemos el tamaño del archivo
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    // Enviamos primero el tamaño del archivo
+    if (write(s, &fileSize, sizeof(fileSize)) != sizeof(fileSize)) {
+        perror("Error al enviar tamaño del archivo");
+        fclose(file);
+        return 0;
+    }
     char buf[BUF_SIZE];
-    int numBytes;
+    size_t numBytes;
+    long totalSent = 0;
     //Leer el archivo y enviarlo
-    while(!feof(file)){
-        numBytes=fread(buf,1,BUF_SIZE,file); //Leer el archivo
+    while(totalSent < fileSize && (numBytes = fread(buf, 1, sizeof(buf), file)) > 0){
         if(write(s,buf,numBytes)!=numBytes){ //Enviar el archivo por el socket
             perror("Error al enviar el archivo");
             return 0;
         }
-    }
-    send_message(s,"Archivo enviado");
-    if(numBytes==-1){
-        perror("Error al leer el archivo");
-        return 0;
+        totalSent += numBytes;
     }
     fclose(file);
     return 1;
 }
 int recieve_file(int s, char * destination){
     FILE *file = fopen(destination,"wb");
+    if(file==NULL){
+        perror("Error al abrir el archivo");
+        return 0;
+    }
+    long fileSize;
+    if (read(s, &fileSize, sizeof(fileSize)) != sizeof(fileSize)) {
+        perror("Error al recibir tamaño del archivo");
+        fclose(file);
+        return 0;
+    }
     char buf[BUF_SIZE];
     size_t  numBytes;
-    //TODO: Cambiar el ciclo para que no sea infinito y se quede leyendo
-    while(1){
-        if((numBytes=read(s,buf,BUF_SIZE))==-1){ //Recibir el archivo por el socket
-            perror("Error al recibir el archivo");
+    long totalReceived = 0; //Contador para rastrear el progreso de la recepción del archivo
+    while(totalReceived < fileSize){
+        if((numBytes=read(s,buf,MIN(sizeof(buf), fileSize - totalReceived)))<=0){ //Recibir el archivo
+            perror("Error al recibir el archivo"); //Con MIN se evita leer más allá del tamaño restante del archivo si se da el caso
             return 0;
         }
-        if(numBytes==0){
-            break;
-        } 
         if(fwrite(buf,1,numBytes,file)!=numBytes){ //Escribir el archivo
             perror("Error al escribir el archivo");
             return 0;
         }
-    }
-    if(numBytes==-1){
-        perror("Error al recibir el archivo");
-        return 0;
+        totalReceived += numBytes;
     }
     fclose(file);
     return 1;

@@ -19,6 +19,7 @@ void handle_signal(int signal);
 * @brief Imprime la ayuda
 */
 void usageClient();
+int c; /*Socket del cliente*/
 int terminated = 0;/*Bandera que determina la ejecución del proceso*/
 
 int main(int argc,char * argv[]){
@@ -30,8 +31,9 @@ int main(int argc,char * argv[]){
         usageClient();
         exit(EXIT_FAILURE);
     }
-    int c = set_connection(argv);
+    c = set_connection(argv);
     while(!terminated){
+        //Arreglar que cuando se presione ctrl+c se cierre el cliente y se salga de read_command()
         char* command = read_command();
         if(!send_message(c,command) || EQUALS(command,"exit\n")){
             break;
@@ -44,8 +46,10 @@ int main(int argc,char * argv[]){
     exit(EXIT_SUCCESS);
 }
 void handle_signal(int signal){
-    printf("Se ha recibido la señal %d\n",signal);
-    terminated = 1; 
+    printf("\nSe ha recibido la señal %d\n",signal);
+    printf("Cerrando el cliente...\n");
+    terminated = 1;
+    close(c);
 }
 void usageClient(){
     printf("Uso: ./rversions <ip> <puerto>\n");

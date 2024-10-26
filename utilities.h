@@ -13,7 +13,7 @@
 #define EQUALS(s1, s2) (strcmp(s1, s2) == 0) /**< Verdadero si dos cadenas son iguales.*/
 #define COMMENT_SIZE 80 /** < Longitud del comentario */
 #define HASH_SIZE 256 /**< Longitud del hash incluyendo NULL*/
-
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
 /**
  * @brief Codigo de retorno de operacion
  */

@@ -17,7 +17,7 @@ void handle_signal(int signal);
 * @brief Imprime la ayuda
 */
 void usageServer();
-
+int client_socket; /*Socket del cliente*/
 int terminated = 0;/*Bandera que determina la ejecución del proceso*/
 
 int main(int argc,char * argv[]){
@@ -30,7 +30,7 @@ int main(int argc,char * argv[]){
         exit(EXIT_FAILURE);
     }
     configureServer();
-    int client_socket = getConnection(argv);
+    client_socket = getConnection(argv);
     char buf[BUF_SIZE];
     while(!terminated){
         //TODO: Comunicacion
@@ -45,8 +45,9 @@ int main(int argc,char * argv[]){
     exit(EXIT_SUCCESS);
 }
 void handle_signal(int signal){
-    printf("Se ha recibido la señal %d\n",signal);
-    terminated = 1; 
+    printf("\nSe ha recibido la señal %d\n",signal);
+    printf("Cerrando el servidor...\n");
+    close(client_socket);
 }
 void usageServer(){
     printf("Uso: ./rversionsd <puerto>\n");
