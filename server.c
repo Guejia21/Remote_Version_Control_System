@@ -152,7 +152,7 @@ return_code get(int c, char ** argv){ //argv es [get NUMBER ARCHIVO]
     trim_newline(argv[2]); //Se elimina el \n del final
 	while(!feof(file)){ //Se lee todo el archivo
 		if(fread(&r,sizeof(file_version),1,file)!=1) break; //Se lee un solo elemento de tamaño (file_version)
-		if(EQUALS(r.filename,argv[2])){ //El argv[2] es el nombre del archivo, además de que en el final contiene un \n
+		if(EQUALS(r.filename,argv[2])){ 
 			if(contador == version){
                 if(!send_message(c,"Archivo encontrado, iniciando envio...")) return MESAGGE_ERROR;
                 fclose(file);

@@ -124,6 +124,7 @@ return_code get_response(int c, char * command){
         else return VERSION_ERROR;
     }
     else if(EQUALS(argv[0],"get")){ //argv es [get NUMBER ARCHIVO]
+        trim_newline(argv[2]); //Se elimina el \n del final
         //Msj esperado: Buscando archivo...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
         //Msj esperado: Archivo encontrado, recbiendo archivo...
