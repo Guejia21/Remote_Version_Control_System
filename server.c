@@ -43,9 +43,9 @@ void removeFile(char * hash);
 * @param filename Nombre del archivo
 * @param c Socket del cliente
 *
-* @return Respuesta
+* @return return_code Resultado de la operación
 */
-int retrieve_file(char * hash, char * filename,int c);
+return_code retrieve_file(char * hash, char * filename,int c);
 
 void configureServer(){
     struct stat s;
@@ -110,45 +110,35 @@ return_code executeCommand(char * command, int c){
     else if(EQUALS(argv[0],"get")){
         return get(c,argv);
     }
+    //TODO: Implementar list
     return 0;
 }
 return_code add(int c){
     char buf[BUF_SIZE];
-    if(!send_message(c,"Verificando si el archivo existe...")){
-            return 0;
-    };
-    recieve_message(c,"Client",buf);
-    if(EQUALS(buf,"Error al crear la versión")){
-        printf("Saliendo de add\n");
-        return VERSION_ERROR;
-    }
+    if(!send_message(c,"Verificando si el archivo existe...")) return MESAGGE_ERROR;
+    //Msj esperado Version creada...
+    if(!recieve_message(c,"Client",buf)) return MESAGGE_ERROR;
+    if(EQUALS(buf,"Error al crear la versión")) return VERSION_ERROR;
     file_version v;
     //Se recibe la versión del archivo
-    if(!recieve_file_version(&v,c)){
-        return 0;
-    }
-    if(!send_message(c,"Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...")){
-        return 0;
-    }
+    if(!recieve_file_version(&v,c)) return RECIEVE_FILE_ERROR;
+    if(!send_message(c,"Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...")) return MESAGGE_ERROR;
     //Se verifica si ya existe una versión con el mismo hash
     int resultado = version_exists(v.filename, v.hash);
-	if(resultado==VERSION_ERROR)return VERSION_ERROR;
+	if(resultado == VERSION_ERROR) return VERSION_ERROR;
 	if(resultado == VERSION_ALREADY_EXISTS) {
-        if(!send_message(c,"Ya existe una versión con el mismo hash")){
-            return 0;
-        }
+        if(!send_message(c,"Ya existe una versión con el mismo hash")) return MESAGGE_ERROR;
         return VERSION_ALREADY_EXISTS;
     }
-    if(!send_message(c,"Recibiendo archivo...")){
-        return 0;
-    }
+    if(!send_message(c,"Recibiendo archivo...")) return MESAGGE_ERROR;
+    //Se recibe el archivo
     char dst_filename[PATH_MAX];
 	snprintf(dst_filename, PATH_MAX, "%s/%s", VERSIONS_DIR, v.hash);
-    if(!recieve_file(c,dst_filename)) return 0;
-    if(!send_message(c,"Arhivo recibido...")) return 0;
+    if(!recieve_file(c,dst_filename)) return RECIEVE_FILE_ERROR;
+    if(!send_message(c,"Arhivo recibido...")) return MESAGGE_ERROR;
     if(add_new_version(&v)==VERSION_ERROR) return VERSION_ERROR;
-    if(!send_message(c,"Archivo guardado en la base de datos correctamente...")) return 0;
-    return VERSION_ADDED;
+    if(!send_message(c,"Archivo guardado en la base de datos correctamente...")) return MESAGGE_ERROR;
+    return FILE_ADDED;
 }
 return_code get(int c, char ** argv){ //argv es [get NUMBER ARCHIVO]
     int version = atoi(argv[1]);
@@ -158,19 +148,20 @@ return_code get(int c, char ** argv){ //argv es [get NUMBER ARCHIVO]
 	file = fopen(VERSIONS_DB_PATH,"r"); //Abre la BD
 	if(file == NULL) return VERSION_ERROR; 
 	int contador = 1;
-    if(!send_message(c,"Buscando archivo...")) return 0;
+    if(!send_message(c,"Buscando archivo...")) return MESAGGE_ERROR;
+    trim_newline(argv[2]); //Se elimina el \n del final
 	while(!feof(file)){ //Se lee todo el archivo
 		if(fread(&r,sizeof(file_version),1,file)!=1) break; //Se lee un solo elemento de tamaño (file_version)
-		if(EQUALS(strcat(r.filename,"\n"),argv[2])){ //El argv[2] es el nombre del archivo, además de que en el final contiene un \n
+		if(EQUALS(r.filename,argv[2])){ //El argv[2] es el nombre del archivo, además de que en el final contiene un \n
 			if(contador == version){
-                if(!send_message(c,"Archivo encontrado, iniciando envio...")) return 0;
+                if(!send_message(c,"Archivo encontrado, iniciando envio...")) return MESAGGE_ERROR;
                 fclose(file);
 				return retrieve_file(r.hash,argv[2],c);
 			} 
 			else contador++;
 		}
 	}
-    send_message(c,"Archivo no encontrado...");
+    if(!send_message(c,"Archivo no encontrado...")) return MESAGGE_ERROR;
 	fclose(file);
 	return VERSION_DOESNT_EXISTS;
 }
@@ -206,12 +197,12 @@ return_code version_exists(char * filename, char * hash) {
 	}
 	return VERSION_DOESNT_EXISTS;
 }
-int retrieve_file(char * hash, char * filename,int c) {
+return_code retrieve_file(char * hash, char * filename,int c) {
 	char src_filename[PATH_MAX];
 	snprintf(src_filename, PATH_MAX, "%s/%s", VERSIONS_DIR, hash);
-    if(!send_file(c,src_filename)) return 0;
-    send_message(c,"Archivo recuperado exitosamente...");
-	return 1;
+    if(!send_file(c,src_filename)) return SEND_FILE_ERROR;
+    if(!send_message(c,"Archivo recuperado exitosamente...")) return MESAGGE_ERROR;
+	return FILE_COPIED;
 }
 void removeFile(char * hash){
 	char dst_filename[PATH_MAX];

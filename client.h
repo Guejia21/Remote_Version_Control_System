@@ -40,8 +40,8 @@ char * read_command();
  * 
  * @param c Socket conectado al servidor
  * @param command Comando enviado
- * @return int 0 si la conexión se cerró, 1 si se recibió una respuesta
+ * @return return_code Resultado de la operacion
  */
-int get_response(int c, char * command);
+return_code get_response(int c, char * command);
 
 #endif

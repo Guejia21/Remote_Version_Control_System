@@ -71,6 +71,7 @@ int set_connection(char * argv[]) {
         exit(EXIT_FAILURE);
     } 
     printf("Conectado al servidor %s:%d\n",ip,puerto);    
+    //Retornar el socket
     return c;
 }
 char * read_command(){
@@ -90,65 +91,48 @@ int isValid(char * command){
     usageRVersions();
     return 0;
 }
-int get_response(int c, char * command){
+return_code get_response(int c, char * command){
     char buf[BUF_SIZE];
     int argc=0;
     char ** argv = split_command(command,&argc);
     if(EQUALS(argv[0],"add")){
-        recieve_message(c,"Server",buf);
+        //Msj esperado: Verificando si el archivo existe...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
         file_version v;
-	    // 1. Crea la nueva version en memoria
-	    // Si la operacion falla, retorna VERSION_ERROR
+	    // Crea la nueva version en memoria
         if(create_version(argv[1], argv[2], &v)==VERSION_ERROR){
 		    send_message(c,"Error al crear la versión");
             return VERSION_ERROR;
 	    }
-        send_message(c,"Version creada...");
-        // 2. Envia la nueva version al servidor
-        if(!send_file_version(&v,c)){
-            return 0;
-        }
-        //Se recibe información acerca del recibimiento del descriptor del archivo
-        if(!recieve_message(c,"Server",buf)){
-            return 0;
-        }
-        //Se recibe información acerca de la existencia de la versión
-        if(!recieve_message(c,"Server",buf)){
-            return 0;
-        }
-        if(EQUALS(buf,"Ya existe una versión con el mismo hash")){
-            return VERSION_ALREADY_EXISTS;
-        }
+        if(!send_message(c,"Version creada...")) return MESAGGE_ERROR;
+        // Envia la nueva version al servidor
+        if(!send_file_version(&v,c)) return SEND_FILE_ERROR;
+        //Msj esperado: Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;        
+        //Msj esperado: Recibiendo archivo...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
+        if(EQUALS(buf,"Ya existe una versión con el mismo hash")) return VERSION_ALREADY_EXISTS;        
         //Se envia el archivo
-        send_file(c,v.filename);
-        //Se recibe información acerca del recibimiento del archivo
+        if(!send_file(c,v.filename)) return SEND_FILE_ERROR;
+        //Msj esperado: Archivo recibido...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
+        //Msj esperado: Archivo guardado en la base de datos correctamente...
         if(!recieve_message(c,"Server",buf)){
             return 0;
         }
-        //Se recibe información acerca de la adición del archivo
-        if(!recieve_message(c,"Server",buf)){
-            return 0;
-        }
-        if(EQUALS(buf,"Archivo guardado en la base de datos correctamente...")){
-            return FILE_ADDED;
-        }else return 0;
+        if(EQUALS(buf,"Archivo guardado en la base de datos correctamente...")) return FILE_ADDED;
+        else return VERSION_ERROR;
     }
     else if(EQUALS(argv[0],"get")){ //argv es [get NUMBER ARCHIVO]
-        //Se recibe info general del server
-        if(!recieve_message(c,"Server",buf)){
-            return 0;
-        }
-        //Se recibe info acerca de la busqueda del archivo
-        if(!recieve_message(c,"Server",buf)){
-            return 0;
-        }
-        if(EQUALS(buf,"Archivo no encontrado...")){
-            return VERSION_DOESNT_EXISTS;
-        }
-        if(!recieve_file(c,argv[2])){
-            return 0;
-        }
-        recieve_message(c,"Server",buf);                
+        //Msj esperado: Buscando archivo...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
+        //Msj esperado: Archivo encontrado, recbiendo archivo...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;        
+        if(EQUALS(buf,"Archivo no encontrado...")) return VERSION_DOESNT_EXISTS;
+        if(!recieve_file(c,argv[2])) return RECIEVE_FILE_ERROR;
+        //Msj esperado: Archivo recuperado exitosamente...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;                
+        return FILE_COPIED;
     }
 }
 return_code create_version(char * filename, char * comment, file_version *result) {

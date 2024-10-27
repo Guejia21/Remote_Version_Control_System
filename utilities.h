@@ -18,6 +18,9 @@
  * @brief Codigo de retorno de operacion
  */
 typedef enum {
+	MESAGGE_ERROR, /*!< Error en el mensaje */
+	RECIEVE_FILE_ERROR, /*!< Error en la recepcion de archivo */
+	SEND_FILE_ERROR, /*!< Error en el envio de archivo */
 	VERSION_ERROR, /*!< Error no especificado */
 	VERSION_CREATED, /*!< Version creada */
 	VERSION_ADDED, /*!< Version agregada */
@@ -49,5 +52,16 @@ typedef  struct __attribute__((aligned(512))) {
  * @return char** Arreglo de tokens
  */
 char **split_command(const char *command, int *argc);
-
+/**
+ * @brief Maneja respuestas
+ * 
+ * @param response Respuesta
+ */
+void manage_response(return_code response);
+/**
+ * @brief Elimina el salto de línea al final de una cadena
+ * 
+ * @param str Cadena
+ */
+void trim_newline(char *str);
 #endif

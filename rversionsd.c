@@ -33,10 +33,8 @@ int main(int argc,char * argv[]){
     client_socket = getConnection(argv);
     char buf[BUF_SIZE];
     while(1){
-        if(!recieve_message(client_socket,"Cliente",buf)){
-            break;
-        }
-        executeCommand(buf,client_socket);
+        if(!recieve_message(client_socket,"Cliente",buf)) break;
+        manage_response(executeCommand(buf,client_socket));
     }
     // 7. Cerrar el socket c
     printf("Cerrando sockets...\n");

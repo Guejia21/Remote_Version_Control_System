@@ -34,10 +34,8 @@ int main(int argc,char * argv[]){
     while(1){
         //Arreglar que cuando se presione ctrl+c se cierre el cliente y se salga de read_command()
         char* command = read_command();
-        if(!send_message(c,command) || EQUALS(command,"exit\n")){
-            break;
-        }
-        if(!get_response(c,command)) continue;
+        if(!send_message(c,command) || EQUALS(command,"exit\n")) break;        
+        manage_response(get_response(c,command));
     }
     // 4. Cerrar el socket
     printf("Cerrando el socket\n");
