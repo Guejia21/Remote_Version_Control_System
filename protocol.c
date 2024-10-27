@@ -18,7 +18,7 @@
 
 int send_message(int s,char * msg){
     if(write(s,msg,strlen(msg))==-1){
-        perror("Error al enviar el saludo");
+        perror("Error al enviar el mensaje");
         return 0;
     }
     return 1;

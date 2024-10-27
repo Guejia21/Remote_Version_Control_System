@@ -66,7 +66,6 @@ int set_connection(char * argv[]) {
         perror("Error initializing address");
         exit(EXIT_FAILURE);
     }
-    printf("Cliente preparado para conectarse al servidor %s:%d\n",ip,puerto);
     if(connect(c,(struct sockaddr *)&addr_server,sizeof(struct sockaddr_in))== -1){
         perror("Error al conectar el socket");
         exit(EXIT_FAILURE);
@@ -85,7 +84,7 @@ char * read_command(){
 int isValid(char * command){
     int argc=0;
     char ** argv = split_command(strdup(command),&argc);
-    if((argc==3 && EQUALS(argv[0],"add")) || (argc==3 && (EQUALS(argv[0],"get"))) || (argc==2 && EQUALS(argv[0],"list"))|| (argc==1 && EQUALS(argv[0],"list\n")||(argc==1 && EQUALS(argv[0],"exit\n")))){
+    if((argc==3 && EQUALS(argv[0],"add")) || (argc==3 && (EQUALS(argv[0],"get")) && atoi(argv[1])>0) || (argc==2 && EQUALS(argv[0],"list"))|| (argc==1 && EQUALS(argv[0],"list\n")||(argc==1 && EQUALS(argv[0],"exit\n")))){
         return 1;
     }
     usageRVersions();
@@ -94,17 +93,17 @@ int isValid(char * command){
 int get_response(int c, char * command){
     char buf[BUF_SIZE];
     int argc=0;
-    if(!recieve_message(c,"Server",buf)){
-        return 0;
-    }
     char ** argv = split_command(command,&argc);
-    if(EQUALS(buf,"Verificando si el archivo existe...")){
+    if(EQUALS(argv[0],"add")){
+        recieve_message(c,"Server",buf);
         file_version v;
 	    // 1. Crea la nueva version en memoria
 	    // Si la operacion falla, retorna VERSION_ERROR
-	    if(create_version(argv[1], argv[2], &v)==VERSION_ERROR){
-		    return VERSION_ERROR;
+        if(create_version(argv[1], argv[2], &v)==VERSION_ERROR){
+		    send_message(c,"Error al crear la versión");
+            return VERSION_ERROR;
 	    }
+        send_message(c,"Version creada...");
         // 2. Envia la nueva version al servidor
         if(!send_file_version(&v,c)){
             return 0;
@@ -126,6 +125,30 @@ int get_response(int c, char * command){
         if(!recieve_message(c,"Server",buf)){
             return 0;
         }
+        //Se recibe información acerca de la adición del archivo
+        if(!recieve_message(c,"Server",buf)){
+            return 0;
+        }
+        if(EQUALS(buf,"Archivo guardado en la base de datos correctamente...")){
+            return FILE_ADDED;
+        }else return 0;
+    }
+    else if(EQUALS(argv[0],"get")){ //argv es [get NUMBER ARCHIVO]
+        //Se recibe info general del server
+        if(!recieve_message(c,"Server",buf)){
+            return 0;
+        }
+        //Se recibe info acerca de la busqueda del archivo
+        if(!recieve_message(c,"Server",buf)){
+            return 0;
+        }
+        if(EQUALS(buf,"Archivo no encontrado...")){
+            return VERSION_DOESNT_EXISTS;
+        }
+        if(!recieve_file(c,argv[2])){
+            return 0;
+        }
+        recieve_message(c,"Server",buf);                
     }
 }
 return_code create_version(char * filename, char * comment, file_version *result) {
@@ -165,5 +188,5 @@ void usageRVersions(){
     printf("Uso:\n   add ARCHIVO \"Comentario\" : Adiciona una version del archivo al repositorio\n");
     printf("    list ARCHIVO             : Lista las versiones del archivo existentes\n");
     printf("    list                     : Lista todos los archivos almacenados en el repositorio\n");
-    printf("    get NUMBER ARCHIVO       : Obtiene una version del archivo del repositorio\n");
+    printf("    get NUMBER ARCHIVO       : Obtiene una version del archivo del repositorio, NUMBER > 0\n");
 }

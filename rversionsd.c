@@ -18,7 +18,7 @@ void handle_signal(int signal);
 */
 void usageServer();
 int client_socket; /*Socket del cliente*/
-int terminated = 0;/*Bandera que determina la ejecución del proceso*/
+
 
 int main(int argc,char * argv[]){
     //0. Instalar los manejadores para SIGINT, SIGTERM
@@ -32,8 +32,7 @@ int main(int argc,char * argv[]){
     configureServer();
     client_socket = getConnection(argv);
     char buf[BUF_SIZE];
-    while(!terminated){
-        //TODO: Comunicacion
+    while(1){
         if(!recieve_message(client_socket,"Cliente",buf)){
             break;
         }
@@ -48,6 +47,7 @@ void handle_signal(int signal){
     printf("\nSe ha recibido la señal %d\n",signal);
     printf("Cerrando el servidor...\n");
     close(client_socket);
+    exit(EXIT_SUCCESS);
 }
 void usageServer(){
     printf("Uso: ./rversionsd <puerto>\n");

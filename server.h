@@ -39,8 +39,22 @@ int getConnection(char * argv[]);
  * 
  * @param command Comando a ejecutar
  * @param c Socket del cliente
- * @return int 0 si la conexión se cerró, 1 si se ejecutó el comando
+ * @return return_code Resutado de la operación
  */
-int executeCommand(char * command, int c);
-
+return_code executeCommand(char * command, int c);
+/**
+ * @brief Funcion de añadir un archivo al sistema
+ * 
+ * @param c Socket del cliente (para comunicacion)
+ * @return return_code Codigo de retorno de la operacion 
+ */
+return_code add(int c);
+/**
+ * @brief Funcion para obtener un archivo guardado en el sistema
+ * 
+ * @param c Socket del cliente (para comunicacion)
+ * @param argv Argumentos del comando (Para revisar la version y el nombre del archivo)
+ * @return return_code Codigo de retorno de la operacion 
+ */
+return_code get(int c, char ** argv);
 #endif

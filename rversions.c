@@ -20,7 +20,6 @@ void handle_signal(int signal);
 */
 void usageClient();
 int c; /*Socket del cliente*/
-int terminated = 0;/*Bandera que determina la ejecución del proceso*/
 
 int main(int argc,char * argv[]){
     //0. Instalar los manejadores para SIGINT, SIGTERM
@@ -32,7 +31,7 @@ int main(int argc,char * argv[]){
         exit(EXIT_FAILURE);
     }
     c = set_connection(argv);
-    while(!terminated){
+    while(1){
         //Arreglar que cuando se presione ctrl+c se cierre el cliente y se salga de read_command()
         char* command = read_command();
         if(!send_message(c,command) || EQUALS(command,"exit\n")){
@@ -48,8 +47,8 @@ int main(int argc,char * argv[]){
 void handle_signal(int signal){
     printf("\nSe ha recibido la señal %d\n",signal);
     printf("Cerrando el cliente...\n");
-    terminated = 1;
     close(c);
+    exit(EXIT_SUCCESS);
 }
 void usageClient(){
     printf("Uso: ./rversions <ip> <puerto>\n");
