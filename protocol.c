@@ -34,7 +34,6 @@ int send_file_version(file_version *v, int s){
     ssize_t nsend = 0;
     ssize_t n =0;
     size_t struct_size = sizeof(file_version);
-    
     char buffer[struct_size];
     memcpy(buffer,v,struct_size);
     while(nsend < struct_size){
@@ -86,6 +85,7 @@ int recieve_message(int s, char* origen,char* buf){
 }
 int send_file(int s, char * source){
     //Abrir el archivo
+    printf("Source: %s\n",source);
     FILE *file = fopen(source,"rb");
     if(file==NULL){
         perror("Error al abrir el archivo");

@@ -95,7 +95,9 @@ int isValid(char * command){
 return_code get_response(int c, char * command){
     char buf[BUF_SIZE];
     int argc=0;
+    memset(buf,0,BUF_SIZE);
     char ** argv = split_command(command,&argc);
+
     if(argc>0 && EQUALS(argv[0],"add")){
         //Msj esperado: Verificando si el archivo existe...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
@@ -138,6 +140,16 @@ return_code get_response(int c, char * command){
     else if(EQUALS(argv[0], "list")){
         // Mensaje esperado: Abriendo repositorio de versiones...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
+        //Recibiendo listado de versiones...
+        file_version v;
+        memset(&v, 0, sizeof(v));
+        while(1){
+            if(!recieve_file_version(&v,c)) return RECIEVE_FILE_ERROR;
+            if(EQUALS(v.filename,"END_OF_LIST")) break;
+            printf("Nombre del archivo: %s\n",v.filename);
+            printf("Hash: %s\n",v.hash);
+            printf("Comentario: %s\n",v.comment);
+        }
         // Mensaje esperado: Listado de versiones terminado...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
         return LIST_RETURN;  
@@ -148,6 +160,7 @@ return_code create_version(char * filename, char * comment, file_version *result
 	// Llena a estructura result recibida por referencia.
 	// Debe validar:
 	// 1. Que el archivo exista y sea un archivo regular
+    memset(result, 0, sizeof(file_version));//Limpia el file_version
 	char *hash = (char*)malloc(HASH_SIZE);
 	if(hash == NULL) return VERSION_ERROR; //Se retorna error en caso de que no se haya podido asignar memoria   
 	if(get_file_hash(filename,hash)==NULL){//Dentro de este método se verifica que exista y sea un archivo correcto
@@ -165,7 +178,6 @@ return_code create_version(char * filename, char * comment, file_version *result
 }
 char *get_file_hash(char * filename, char * hash) {
 	struct stat s;
-    printf("Filename: '%s' (longitud: %lu)\n", filename, strlen(filename));
 	//Verificar que el archivo existe y que se puede obtener el hash
 	if (stat(filename, &s) < 0 || !S_ISREG(s.st_mode)) {
 		perror("stat");

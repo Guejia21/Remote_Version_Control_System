@@ -1,8 +1,8 @@
 /**
  * @file server.c
  * @author Jonathan David Guejia Burbano (jonathanguejia@unicauca.edu.co)
- * @author Jhoan David ChacÃ³n Moran (jhoanchacon@unicauca.edu.co)
- * @brief ImplementaciÃ³n de las funciones del servidor
+ * @author Jhoan David Chacón Moran (jhoanchacon@unicauca.edu.co)
+ * @brief Implementación de las funciones del servidor
  * @version 0.1
  * @date 2024-10-19
  * 
@@ -16,7 +16,7 @@
  * @brief Verifica si una version de un archivo ya existe
  * 
  * @param filename Nombre del archivo
- * @param hash hash del archivo (con este se realiza la verificaciÃ³n)
+ * @param hash hash del archivo (con este se realiza la verificación)
  * @return return_code Resultado de la operacion
  */
 return_code version_exists(char * filename, char * hash);
@@ -46,7 +46,7 @@ void removeFile(char * hash);
 * @param filename Nombre del archivo
 * @param c Socket del cliente
 *
-* @return return_code Resultado de la operaciÃ³n
+* @return return_code Resultado de la operación
 */
 return_code retrieve_file(char * hash, char * filename,int c);
 
@@ -91,13 +91,13 @@ int getConnection(char * argv[]) {
         perror("Error al crear el socket");
         exit(EXIT_FAILURE);
     }
-    // 3. Asignar una direcciÃ³n al socket (ip,puerto)
+    // 3. Asignar una dirección al socket (ip,puerto)
     memset(&addr_server,0,sizeof(struct sockaddr_in));
     addr_server.sin_family=AF_INET;
     addr_server.sin_port=htons(puerto);
     addr_server.sin_addr.s_addr=INADDR_ANY;
     if(bind(s,(struct sockaddr *)&addr_server,sizeof(struct sockaddr_in))== -1){
-        perror("Error al asignar la direcciÃ³n al socket");
+        perror("Error al asignar la dirección al socket");
         exit(EXIT_FAILURE);
     }
     // 4. Poner el socket en modo de escucha
@@ -109,17 +109,17 @@ int getConnection(char * argv[]) {
     struct sockaddr_in addr_client;
     socklen_t addr_client_len=sizeof(struct sockaddr_in);
     printf("SERVIDOR INICIADO\n");
-    printf("Esperando por una conexiÃ³n en el puerto %d\n",puerto);
+    printf("Esperando por una conexión en el puerto %d\n",puerto);
     if((c = accept(s,(struct  sockaddr *) &addr_client,&addr_client_len))==-1){
-        perror("Error al aceptar la conexiÃ³n");
+        perror("Error al aceptar la conexión");
         exit(EXIT_FAILURE);
     }
-    printf("ConexiÃ³n aceptada\n");
+    printf("Conexión aceptada\n");
     close(s);
     return c;
 }
 return_code executeCommand(char * command, int c){
-    //Gracias a la validaciÃ³n previa, se sabe que el comando es correcto
+    //Gracias a la validación previa, se sabe que el comando es correcto
     int argc=0;
     char ** argv = split_command(command,&argc);
     if(EQUALS(argv[0],"add")){
@@ -162,11 +162,11 @@ return_code add(int c){
     //Se recibe la version del archivo
     if(!recieve_file_version(&v,c)) return RECIEVE_FILE_ERROR;
     if(!send_message(c,"Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...")) return MESAGGE_ERROR;
-    //Se verifica si ya existe una versiÃ³n con el mismo hash
+    //Se verifica si ya existe una versión con el mismo hash
     int resultado = version_exists(v.filename, v.hash);
 	if(resultado == VERSION_ERROR) return VERSION_ERROR;
 	if(resultado == VERSION_ALREADY_EXISTS) {
-        if(!send_message(c,"Ya existe una versiÃ³n con el mismo hash")) return MESAGGE_ERROR;
+        if(!send_message(c,"Ya existe una versión con el mismo hash")) return MESAGGE_ERROR;
         return VERSION_ALREADY_EXISTS;
     }
     if(!send_message(c,"Recibiendo archivo...")) return MESAGGE_ERROR;
@@ -275,19 +275,24 @@ return_code list(char * filename, int c){
         /*Si filename es NULL se muestran todas las versiones*/
         if(filename == NULL || EQUALS(r.filename, filename)){
             char *truncated_hash = get_modified_hash(r.hash);
-            printf("Nombre: %s\n",r.filename);
-            printf("Hash: %s\n", truncated_hash);
-            printf("Comentario: %s\n",r.comment);
-            free(truncated_hash); // Liberar la memoria despuÃ©s de usarla
+            strncpy(r.hash, truncated_hash, sizeof(r.hash) - 1);
+            r.hash[sizeof(r.hash) - 1] = '\0'; // Terminacion correcta
+            free(truncated_hash); // Liberar la memoria después de usarla
+            if(!send_file_version(&r, c)) return MESAGGE_ERROR;
             cont += 1;
         }
     }
+    // Manda un file_version especial para notificarle al usuario que se terminaron las versiones
+    file_version end_marker;
+    memset(&end_marker, 0, sizeof(end_marker));
+    strcpy(end_marker.filename, "END_OF_LIST");
+    if(!send_file_version(&end_marker, c)) return MESAGGE_ERROR;
     fclose(file);
     if (cont == 0) {
         if (!send_message(c,"No se encontraron versiones")) return MESAGGE_ERROR;
         return VERSIONS_NOT_FOUND;
     }
-    /* Enviar mensaje final al cliente indicando que se completÃ³ la operaciÃ³n */
+    /* Enviar mensaje final al cliente indicando que se completó la operación */
     if (!send_message(c, "Listado de versiones terminado")) return MESAGGE_ERROR;
     return LIST_RETURN;
 }
