@@ -123,9 +123,11 @@ return_code executeCommand(char * command, int c){
     int argc=0;
     char ** argv = split_command(command,&argc);
     if(EQUALS(argv[0],"add")){
+        printf("Ejecutando add...\n");
         return add(c);
     }
     else if(EQUALS(argv[0],"get")){
+        printf("Ejecutando get...\n");
         return get(c,argv);
     }
     //TODO: Implementar list
@@ -137,15 +139,15 @@ return_code executeCommand(char * command, int c){
             return list(argv[1], c); // Llama a list con NULL si no se proporciona un nombre de archivo
         }
     }*/
-    
     else if(EQUALS(argv[0], "list")){
+        printf("Ejecutado list\n");
         if(argc<1){
             return list(argv[1], c);
         }else{
             return list(NULL, c);
         }
     }
-    return 0;
+    return COMMAND_NOT_FOUND;
     
 }
 

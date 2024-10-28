@@ -31,7 +31,8 @@ typedef enum {
 	FILE_COPIED, /*<! Archivo copiado*/
 	VERSION_ADDED_DB, /*<! Archivo añadida en la BD*/
 	LIST_RETURN, /*<! Lista de versiones retornada*/
-	VERSIONS_NOT_FOUND /*<! No se encontraron versiones*/
+	VERSIONS_NOT_FOUND, /*<! No se encontraron versiones*/
+	COMMAND_NOT_FOUND /*<! No se encontro el comando*/
 	/* .. */ 
 }return_code;
 /**

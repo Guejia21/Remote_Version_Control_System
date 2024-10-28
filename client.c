@@ -86,7 +86,7 @@ char * read_command(){
 int isValid(char * command){
     int argc=0;
     char ** argv = split_command(strdup(command),&argc);
-    if((argc==3 && EQUALS(argv[0],"add")) || (argc==3 && (EQUALS(argv[0],"get")) && atoi(argv[1])>0) || (argc==2 && EQUALS(argv[0],"list"))|| (argc==1 && EQUALS(argv[0],"list\n")||(argc==1 && EQUALS(argv[0],"exit\n")))){
+    if((argc==3 && EQUALS(argv[0],"add")) || (argc==3 && (EQUALS(argv[0],"get")) && atoi(argv[1])>0) || (argc==2 && EQUALS(argv[0],"list"))|| (argc==1 && EQUALS(argv[0],"list")||(argc==1 && EQUALS(argv[0],"exit")))){
         return 1;
     }
     usageRVersions();
@@ -125,7 +125,6 @@ return_code get_response(int c, char * command){
         else return VERSION_ERROR;
     }
     else if(EQUALS(argv[0],"get")){ //argv es [get NUMBER ARCHIVO]
-        trim_newline(argv[2]); //Se elimina el \n del final
         //Msj esperado: Buscando archivo...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
         //Msj esperado: Archivo encontrado, recbiendo archivo...
@@ -139,10 +138,11 @@ return_code get_response(int c, char * command){
     else if(EQUALS(argv[0], "list")){
         // Mensaje esperado: Abriendo repositorio de versiones...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
-        // Mensaje esperado: Listando versiones...
-        //if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
+        // Mensaje esperado: Listado de versiones terminado...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
         return LIST_RETURN;  
     }
+    else printf("Comando no reconocido\n");
 }
 return_code create_version(char * filename, char * comment, file_version *result) {
 	// Llena a estructura result recibida por referencia.
@@ -165,7 +165,7 @@ return_code create_version(char * filename, char * comment, file_version *result
 }
 char *get_file_hash(char * filename, char * hash) {
 	struct stat s;
-
+    printf("Filename: '%s' (longitud: %lu)\n", filename, strlen(filename));
 	//Verificar que el archivo existe y que se puede obtener el hash
 	if (stat(filename, &s) < 0 || !S_ISREG(s.st_mode)) {
 		perror("stat");

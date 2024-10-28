@@ -13,8 +13,13 @@ char **split_command(const char *command, int *argc){
 
     // Tokenizar el comando y almacenar hasta 3 tokens
     while (token != NULL && *argc < 3) {
+        trim_newline(token);
         argv[*argc] = strdup(token);
-        (*argc)++;
+        (*argc)++;     
+        if(EQUALS(argv[0],"add")&&*argc == 2) {
+            token = strtok(NULL,"\"");  //Para el comentario se debe cambiar el delimitador a "
+            continue;
+        }
         token = strtok(NULL, " ");
     }
     //liberar la memoria de la copia del comando
