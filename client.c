@@ -82,6 +82,7 @@ char * read_command(){
     }while(!isValid(command));
     return command;
 }
+
 int isValid(char * command){
     int argc=0;
     char ** argv = split_command(strdup(command),&argc);
@@ -134,6 +135,13 @@ return_code get_response(int c, char * command){
         //Msj esperado: Archivo recuperado exitosamente...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;                
         return FILE_COPIED;
+    }
+    else if(EQUALS(argv[0], "list")){
+        // Mensaje esperado: Abriendo repositorio de versiones...
+        if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
+        // Mensaje esperado: Listando versiones...
+        //if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
+        return LIST_RETURN;  
     }
 }
 return_code create_version(char * filename, char * comment, file_version *result) {

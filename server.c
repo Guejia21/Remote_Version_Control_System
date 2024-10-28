@@ -20,6 +20,7 @@
  * @return return_code Resultado de la operacion
  */
 return_code version_exists(char * filename, char * hash);
+
 /**
  * @brief Adiciona una nueva version de un archivo.
  *
@@ -30,12 +31,14 @@ return_code version_exists(char * filename, char * hash);
  * @return return_code Resultado de la operacions.
  */
 return_code add_new_version(file_version * v);
+
 /**
  * @brief Elimina el arhivo copiado en .versions
  * 
  * @param hash Nombre del archivo ubicado en .versions
  */
 void removeFile(char * hash);
+
 /**
 * @brief Almacena un archivo en el repositorio
 *
@@ -46,6 +49,20 @@ void removeFile(char * hash);
 * @return return_code Resultado de la operación
 */
 return_code retrieve_file(char * hash, char * filename,int c);
+
+/**
+ * @brief Lista las versiones de un archivo
+ * 
+ * @param filename Nombre del archivo, NULL para listar todo el repositorio
+ */
+return_code list(char * filename, int c);
+
+/**
+ * @brief Imprime los primeros y últimos caracteres del hash
+ * 
+ * @param hash Hash del archivo
+ */
+char* get_modified_hash(char * hash);
 
 void configureServer(){
     struct stat s;
@@ -62,6 +79,7 @@ void configureServer(){
 		creat(VERSIONS_DB_PATH, 0755);
 	}
 }
+
 int getConnection(char * argv[]) {
     //1. Obtener el puerto del argumento
     int puerto = atoi(argv[1]);
@@ -111,8 +129,26 @@ return_code executeCommand(char * command, int c){
         return get(c,argv);
     }
     //TODO: Implementar list
+    /*
+    else if (EQUALS(argv[0], "list")) {
+        if (argc == 0) { // Verifica si hay exactamente dos argumentos: el comando y el nombre del archivo
+            return list(NULL, c);
+        } else {
+            return list(argv[1], c); // Llama a list con NULL si no se proporciona un nombre de archivo
+        }
+    }*/
+    
+    else if(EQUALS(argv[0], "list")){
+        if(argc<1){
+            return list(argv[1], c);
+        }else{
+            return list(NULL, c);
+        }
+    }
     return 0;
+    
 }
+
 return_code add(int c){
     char buf[BUF_SIZE];
     if(!send_message(c,"Verificando si el archivo existe...")) return MESAGGE_ERROR;
@@ -120,6 +156,7 @@ return_code add(int c){
     if(!recieve_message(c,"Client",buf)) return MESAGGE_ERROR;
     if(EQUALS(buf,"Error al crear la versión")) return VERSION_ERROR;
     file_version v;
+    memset(&v, 0, sizeof(v));
     //Se recibe la versión del archivo
     if(!recieve_file_version(&v,c)) return RECIEVE_FILE_ERROR;
     if(!send_message(c,"Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...")) return MESAGGE_ERROR;
@@ -140,6 +177,7 @@ return_code add(int c){
     if(!send_message(c,"Archivo guardado en la base de datos correctamente...")) return MESAGGE_ERROR;
     return FILE_ADDED;
 }
+
 return_code get(int c, char ** argv){ //argv es [get NUMBER ARCHIVO]
     int version = atoi(argv[1]);
     //1. Abre la BD y busca el registro r que coincide con filename y version
@@ -165,6 +203,7 @@ return_code get(int c, char ** argv){ //argv es [get NUMBER ARCHIVO]
 	fclose(file);
 	return VERSION_DOESNT_EXISTS;
 }
+
 return_code add_new_version(file_version * v) {
 	FILE * fp;
     printf("Guardando en base de datos:\n");
@@ -183,6 +222,7 @@ return_code add_new_version(file_version * v) {
     fclose(fp); 
 	return VERSION_ADDED_DB;
 }
+
 return_code version_exists(char * filename, char * hash) {
 	FILE *file;
 	file = fopen(VERSIONS_DB_PATH,"r"); //Abre la BD
@@ -197,6 +237,7 @@ return_code version_exists(char * filename, char * hash) {
 	}
 	return VERSION_DOESNT_EXISTS;
 }
+
 return_code retrieve_file(char * hash, char * filename,int c) {
 	char src_filename[PATH_MAX];
 	snprintf(src_filename, PATH_MAX, "%s/%s", VERSIONS_DIR, hash);
@@ -204,8 +245,59 @@ return_code retrieve_file(char * hash, char * filename,int c) {
     if(!send_message(c,"Archivo recuperado exitosamente...")) return MESAGGE_ERROR;
 	return FILE_COPIED;
 }
+
 void removeFile(char * hash){
 	char dst_filename[PATH_MAX];
 	snprintf(dst_filename, PATH_MAX, "%s/%s", VERSIONS_DIR,hash);
 	remove(dst_filename);
+}
+
+return_code list(char * filename, int c){
+    char buf[BUF_SIZE];
+    int cont = 0;
+    file_version r;
+    /*incializar la estructura con memset*/
+    memset(&r, 0, sizeof(r));
+    /*Abrir la base de datos de versiones*/
+    if(!send_message(c,"Abriendo repositorio de versiones...\n")) return MESAGGE_ERROR;
+    FILE *file;
+    file = fopen(VERSIONS_DB_PATH, "rb");
+    if(file == NULL){
+        perror("Error al abrir el archivo de versiones\n");
+        return VERSION_ERROR;
+    }
+    /*Leer hasta el final del archivo*/
+    //if(!send_message(c,"Listando versiones...")) return MESAGGE_ERROR;
+    while(!feof(file)){
+        if(fread(&r, sizeof(file_version), 1, file) != 1) break;
+        /*Si filename es NULL se muestran todas las versiones*/
+        if(filename == NULL || EQUALS(r.filename, filename)){
+            char *truncated_hash = get_modified_hash(r.hash);
+            printf("Nombre: %s\n",r.filename);
+            printf("Hash: %s\n", truncated_hash);
+            printf("Comentario: %s\n",r.comment);
+            free(truncated_hash); // Liberar la memoria después de usarla
+            cont += 1;
+        }
+    }
+    fclose(file);
+    if (cont == 0) {
+        if (!send_message(c,"No se encontraron versiones")) return MESAGGE_ERROR;
+        return VERSIONS_NOT_FOUND;
+    }
+    /* Enviar mensaje final al cliente indicando que se completó la operación */
+    if (!send_message(c, "Listado de versiones terminado")) return MESAGGE_ERROR;
+    return LIST_RETURN;
+}
+
+char* get_modified_hash(char * hash){
+    size_t hash_length = strlen(hash);
+    // Asignar memoria para el hash truncado
+    char *truncated_hash = malloc(12); // 8 caracteres + 1 para "..." + 1 para el terminador nulo
+    if (truncated_hash == NULL) {
+        return NULL; // Manejo de error si malloc falla
+    }
+    // Construir el hash truncado
+    snprintf(truncated_hash, 12, "%.4s...%.4s", hash, hash + hash_length - 4);
+    return truncated_hash; // Retornar el hash truncado
 }

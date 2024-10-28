@@ -30,7 +30,9 @@ typedef enum {
 	FILE_NOT_COPIED, /*<! Archivo no copiado*/
 	FILE_COPIED, /*<! Archivo copiado*/
 	VERSION_ADDED_DB, /*<! Archivo añadida en la BD*/
-	/* .. */
+	LIST_RETURN, /*<! Lista de versiones retornada*/
+	VERSIONS_NOT_FOUND /*<! No se encontraron versiones*/
+	/* .. */ 
 }return_code;
 /**
  * @brief Version de un archivo.

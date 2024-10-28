@@ -68,6 +68,12 @@ void manage_response(return_code response){
     case VERSION_ADDED_DB:
         printf("Archivo añadida en la BD\n");
         break;
+    case LIST_RETURN:
+        printf("Listado de versiones correcto\n");
+        break;
+    case VERSIONS_NOT_FOUND:
+        printf("Version no encontrada\n");
+        break;
     default:
         break;
     }
