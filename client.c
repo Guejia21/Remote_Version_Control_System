@@ -96,13 +96,13 @@ return_code get_response(int c, char * command){
     char buf[BUF_SIZE];
     int argc=0;
     char ** argv = split_command(command,&argc);
-    if(EQUALS(argv[0],"add")){
+    if(argc>0 && EQUALS(argv[0],"add")){
         //Msj esperado: Verificando si el archivo existe...
         if(!recieve_message(c,"Server",buf)) return MESAGGE_ERROR;
         file_version v;
 	    // Crea la nueva version en memoria
         if(create_version(argv[1], argv[2], &v)==VERSION_ERROR){
-		    send_message(c,"Error al crear la versión");
+		    send_message(c,"Error al crear la versión"); 
             return VERSION_ERROR;
 	    }
         if(!send_message(c,"Version creada...")) return MESAGGE_ERROR;

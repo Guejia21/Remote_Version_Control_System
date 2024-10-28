@@ -63,4 +63,7 @@ int send_file(int s, char * filename);
  * @return int 1 si se recibio el archivo, 0 si hubo un error
  */
 int recieve_file(int s, char * destination);
+int send_data(int s, void *data, size_t size);
+int receive_data(int s, void *data, size_t size); 
+
 #endif

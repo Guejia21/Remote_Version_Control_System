@@ -1,8 +1,8 @@
 /**
  * @file server.c
  * @author Jonathan David Guejia Burbano (jonathanguejia@unicauca.edu.co)
- * @author Jhoan David Chacón Moran (jhoanchacon@unicauca.edu.co)
- * @brief Implementación de las funciones del servidor
+ * @author Jhoan David ChacÃ³n Moran (jhoanchacon@unicauca.edu.co)
+ * @brief ImplementaciÃ³n de las funciones del servidor
  * @version 0.1
  * @date 2024-10-19
  * 
@@ -16,7 +16,7 @@
  * @brief Verifica si una version de un archivo ya existe
  * 
  * @param filename Nombre del archivo
- * @param hash hash del archivo (con este se realiza la verificación)
+ * @param hash hash del archivo (con este se realiza la verificaciÃ³n)
  * @return return_code Resultado de la operacion
  */
 return_code version_exists(char * filename, char * hash);
@@ -46,7 +46,7 @@ void removeFile(char * hash);
 * @param filename Nombre del archivo
 * @param c Socket del cliente
 *
-* @return return_code Resultado de la operación
+* @return return_code Resultado de la operaciÃ³n
 */
 return_code retrieve_file(char * hash, char * filename,int c);
 
@@ -58,7 +58,7 @@ return_code retrieve_file(char * hash, char * filename,int c);
 return_code list(char * filename, int c);
 
 /**
- * @brief Imprime los primeros y últimos caracteres del hash
+ * @brief Imprime los primeros y Ãºltimos caracteres del hash
  * 
  * @param hash Hash del archivo
  */
@@ -91,13 +91,13 @@ int getConnection(char * argv[]) {
         perror("Error al crear el socket");
         exit(EXIT_FAILURE);
     }
-    // 3. Asignar una dirección al socket (ip,puerto)
+    // 3. Asignar una direcciÃ³n al socket (ip,puerto)
     memset(&addr_server,0,sizeof(struct sockaddr_in));
     addr_server.sin_family=AF_INET;
     addr_server.sin_port=htons(puerto);
     addr_server.sin_addr.s_addr=INADDR_ANY;
     if(bind(s,(struct sockaddr *)&addr_server,sizeof(struct sockaddr_in))== -1){
-        perror("Error al asignar la dirección al socket");
+        perror("Error al asignar la direcciÃ³n al socket");
         exit(EXIT_FAILURE);
     }
     // 4. Poner el socket en modo de escucha
@@ -109,17 +109,17 @@ int getConnection(char * argv[]) {
     struct sockaddr_in addr_client;
     socklen_t addr_client_len=sizeof(struct sockaddr_in);
     printf("SERVIDOR INICIADO\n");
-    printf("Esperando por una conexión en el puerto %d\n",puerto);
+    printf("Esperando por una conexiÃ³n en el puerto %d\n",puerto);
     if((c = accept(s,(struct  sockaddr *) &addr_client,&addr_client_len))==-1){
-        perror("Error al aceptar la conexión");
+        perror("Error al aceptar la conexiÃ³n");
         exit(EXIT_FAILURE);
     }
-    printf("Conexión aceptada\n");
+    printf("ConexiÃ³n aceptada\n");
     close(s);
     return c;
 }
 return_code executeCommand(char * command, int c){
-    //Gracias a la validación previa, se sabe que el comando es correcto
+    //Gracias a la validaciÃ³n previa, se sabe que el comando es correcto
     int argc=0;
     char ** argv = split_command(command,&argc);
     if(EQUALS(argv[0],"add")){
@@ -159,14 +159,14 @@ return_code add(int c){
     if(EQUALS(buf,"Error al crear la versión")) return VERSION_ERROR;
     file_version v;
     memset(&v, 0, sizeof(v));
-    //Se recibe la versión del archivo
+    //Se recibe la version del archivo
     if(!recieve_file_version(&v,c)) return RECIEVE_FILE_ERROR;
     if(!send_message(c,"Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...")) return MESAGGE_ERROR;
-    //Se verifica si ya existe una versión con el mismo hash
+    //Se verifica si ya existe una versiÃ³n con el mismo hash
     int resultado = version_exists(v.filename, v.hash);
 	if(resultado == VERSION_ERROR) return VERSION_ERROR;
 	if(resultado == VERSION_ALREADY_EXISTS) {
-        if(!send_message(c,"Ya existe una versión con el mismo hash")) return MESAGGE_ERROR;
+        if(!send_message(c,"Ya existe una versiÃ³n con el mismo hash")) return MESAGGE_ERROR;
         return VERSION_ALREADY_EXISTS;
     }
     if(!send_message(c,"Recibiendo archivo...")) return MESAGGE_ERROR;
@@ -191,7 +191,7 @@ return_code get(int c, char ** argv){ //argv es [get NUMBER ARCHIVO]
     if(!send_message(c,"Buscando archivo...")) return MESAGGE_ERROR;
     trim_newline(argv[2]); //Se elimina el \n del final
 	while(!feof(file)){ //Se lee todo el archivo
-		if(fread(&r,sizeof(file_version),1,file)!=1) break; //Se lee un solo elemento de tamaño (file_version)
+		if(fread(&r,sizeof(file_version),1,file)!=1) break; //Se lee un solo elemento de tamaÃ±o (file_version)
 		if(EQUALS(r.filename,argv[2])){ 
 			if(contador == version){
                 if(!send_message(c,"Archivo encontrado, iniciando envio...")) return MESAGGE_ERROR;
@@ -212,7 +212,7 @@ return_code add_new_version(file_version * v) {
     printf("Nombre: %s\n",v->filename);
     printf("Hash: %s\n",v->hash);
     printf("Comentario: %s\n",v->comment);
-	fp = fopen(VERSIONS_DB_PATH,"a"); //Se abre la base de datos en modo append, es decir que se escribirá al final del archivo
+	fp = fopen(VERSIONS_DB_PATH,"a"); //Se abre la base de datos en modo append, es decir que se escribirÃ¡ al final del archivo
     if(fp == NULL){
         perror("Error al abrir la base de datos");
         return VERSION_ERROR;
@@ -234,7 +234,7 @@ return_code version_exists(char * filename, char * hash) {
     } 
 	file_version r; //Estructura que recibe cada archivo guardado en la BD
 	while(!feof(file)){ //Se lee todo el archivo
-		if(fread(&r,sizeof(file_version),1,file)!=1) break; //Se lee un solo elemento de tamaño (file_version)
+		if(fread(&r,sizeof(file_version),1,file)!=1) break; //Se lee un solo elemento de tamaÃ±o (file_version)
 		if(EQUALS(r.filename,filename) && EQUALS(r.hash,hash)) return VERSION_ALREADY_EXISTS;//Si existe un archivo guardado con el mismo nombre y hash, significa que ya existe
 	}
 	return VERSION_DOESNT_EXISTS;
@@ -278,7 +278,7 @@ return_code list(char * filename, int c){
             printf("Nombre: %s\n",r.filename);
             printf("Hash: %s\n", truncated_hash);
             printf("Comentario: %s\n",r.comment);
-            free(truncated_hash); // Liberar la memoria después de usarla
+            free(truncated_hash); // Liberar la memoria despuÃ©s de usarla
             cont += 1;
         }
     }
@@ -287,7 +287,7 @@ return_code list(char * filename, int c){
         if (!send_message(c,"No se encontraron versiones")) return MESAGGE_ERROR;
         return VERSIONS_NOT_FOUND;
     }
-    /* Enviar mensaje final al cliente indicando que se completó la operación */
+    /* Enviar mensaje final al cliente indicando que se completÃ³ la operaciÃ³n */
     if (!send_message(c, "Listado de versiones terminado")) return MESAGGE_ERROR;
     return LIST_RETURN;
 }

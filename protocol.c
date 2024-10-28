@@ -11,12 +11,19 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
 #include "protocol.h"
 #include "utilities.h"
 
 int send_message(int s,char * msg){
+    size_t msg_size = strlen(msg);
+    if(write(s,&msg_size,sizeof(size_t))==-1){
+        perror("Error al enviar el tamaÃ±o del mensaje");
+        return 0;
+    }    
     if(write(s,msg,strlen(msg))==-1){
         perror("Error al enviar el mensaje");
         return 0;
@@ -24,22 +31,43 @@ int send_message(int s,char * msg){
     return 1;
 }
 int send_file_version(file_version *v, int s){
-    if(write(s,v,sizeof(file_version))==-1){
-        perror("Error al enviar la versión");
-        return 0;
+    ssize_t nsend = 0;
+    ssize_t n =0;
+    size_t struct_size = sizeof(file_version);
+    
+    char buffer[struct_size];
+    memcpy(buffer,v,struct_size);
+    while(nsend < struct_size){
+        n = send(s,buffer+nsend,struct_size-nsend,0);
+        if(n<0){
+            perror("Error sendind to socket");
+            return n;
+        }
+        nsend += n;
     }
     return 1;
 }
 int recieve_file_version(file_version *v, int s){
-    if(read(s,v,sizeof(file_version))==-1){
-        perror("Error al recibir la versión");
-        return 0;
+    ssize_t nread = 0;
+    ssize_t n = 0;
+    size_t struct_size = sizeof(file_version);
+    char buffer[struct_size];
+    while (nread < struct_size) {
+        n = recv(s, buffer + nread, struct_size - nread, 0);
+        if (n < 0) {
+            perror("Error reading from socket");
+            return n;
+        }
+        nread += n;
     }
+    memcpy(v, buffer, struct_size);
     return 1;
 }
 int recieve_message(int s, char* origen,char* buf){
+    size_t msg_size;
+    recv(s,&msg_size,sizeof(size_t),0);
     int numBytes;
-    if((numBytes=read(s,buf,BUF_SIZE-1))==-1){
+    if((numBytes=read(s,buf,msg_size))==-1){
         perror("Error al recibir el saludo");
         return 0;
     }
