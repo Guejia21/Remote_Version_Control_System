@@ -131,17 +131,10 @@ return_code executeCommand(char * command, int c){
         return get(c,argv);
     }
     //TODO: Implementar list
-    /*
-    else if (EQUALS(argv[0], "list")) {
-        if (argc == 0) { // Verifica si hay exactamente dos argumentos: el comando y el nombre del archivo
-            return list(NULL, c);
-        } else {
-            return list(argv[1], c); // Llama a list con NULL si no se proporciona un nombre de archivo
-        }
-    }*/
     else if(EQUALS(argv[0], "list")){
         printf("Ejecutado list\n");
-        if(argc<1){
+        printf("filenameeee: %s\n", argv[1]);
+        if(argv[1] != NULL){
             return list(argv[1], c);
         }else{
             return list(NULL, c);
@@ -268,9 +261,12 @@ return_code list(char * filename, int c){
         perror("Error al abrir el archivo de versiones\n");
         return VERSION_ERROR;
     }
+    printf("antes del bucle, despues de hacer fopen\n");
+    printf("filename: %s\n", filename);
     /*Leer hasta el final del archivo*/
     //if(!send_message(c,"Listando versiones...")) return MESAGGE_ERROR;
     while(!feof(file)){
+        printf("Dentro del bucle\n");
         if(fread(&r, sizeof(file_version), 1, file) != 1) break;
         /*Si filename es NULL se muestran todas las versiones*/
         if(filename == NULL || EQUALS(r.filename, filename)){
