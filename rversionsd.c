@@ -8,7 +8,7 @@
 #include "protocol.h"
 #include "server.h"
 /**
- * @brief Funcion para manejar adecuadaente las señales SIGINT y SIGTERM
+ * @brief Funcion para manejar adecuadamente las señales SIGINT y SIGTERM
  * 
  * @param signal Señal recibida
  */

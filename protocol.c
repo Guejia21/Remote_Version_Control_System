@@ -21,7 +21,7 @@
 int send_message(int s,char * msg){
     size_t msg_size = strlen(msg);
     if(write(s,&msg_size,sizeof(size_t))==-1){
-        perror("Error al enviar el tamaÃ±o del mensaje");
+        perror("Error al enviar el tamanio del mensaje");
         return 0;
     }    
     if(write(s,msg,strlen(msg))==-1){
@@ -43,7 +43,7 @@ int send_file_version(file_version *v, int s){
             return n;
         }
         nsend += n;
-    }
+    } 
     return 1;
 }
 int recieve_file_version(file_version *v, int s){

@@ -28,7 +28,7 @@ return_code version_exists(char * filename, char * hash);
  * @param comment Comentario de la version.
  * @param hash Hash del contenido.
  *
- * @return return_code Resultado de la operacions.
+ * @return return_code Resultado de la operaciones.
  */
 return_code add_new_version(file_version * v);
 
@@ -58,7 +58,7 @@ return_code retrieve_file(char * hash, char * filename,int c);
 return_code list(char * filename, int c);
 
 /**
- * @brief Imprime los primeros y Ãºltimos caracteres del hash
+ * @brief Imprime los primeros y últimos caracteres del hash
  * 
  * @param hash Hash del archivo
  */
@@ -130,18 +130,15 @@ return_code executeCommand(char * command, int c){
         printf("Ejecutando get...\n");
         return get(c,argv);
     }
-    //TODO: Implementar list
     else if(EQUALS(argv[0], "list")){
-        printf("Ejecutado list\n");
-        printf("filenameeee: %s\n", argv[1]);
-        if(argv[1] != NULL){
-            return list(argv[1], c);
-        }else{
+        printf("Ejecutando list\n");
+        if(argc == 1){
             return list(NULL, c);
+        }else{
+            return list(argv[1], c);
         }
     }
     return COMMAND_NOT_FOUND;
-    
 }
 
 return_code add(int c){
@@ -261,14 +258,10 @@ return_code list(char * filename, int c){
         perror("Error al abrir el archivo de versiones\n");
         return VERSION_ERROR;
     }
-    printf("antes del bucle, despues de hacer fopen\n");
-    printf("filename: %s\n", filename);
     /*Leer hasta el final del archivo*/
-    //if(!send_message(c,"Listando versiones...")) return MESAGGE_ERROR;
     while(!feof(file)){
-        printf("Dentro del bucle\n");
         if(fread(&r, sizeof(file_version), 1, file) != 1) break;
-        /*Si filename es NULL se muestran todas las versiones*/
+        /*Si filename es NULL, se muestran todas las versiones*/
         if(filename == NULL || EQUALS(r.filename, filename)){
             char *truncated_hash = get_modified_hash(r.hash);
             strncpy(r.hash, truncated_hash, sizeof(r.hash) - 1);
