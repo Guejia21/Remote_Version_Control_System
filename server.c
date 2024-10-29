@@ -149,7 +149,7 @@ return_code add(int c){
     if(EQUALS(buf,"Error al crear la versión")) return VERSION_ERROR;
     file_version v;
     memset(&v, 0, sizeof(v));
-    //Se recibe la version del archivo
+    //Se recibe la version del archivo 
     if(!recieve_file_version(&v,c)) return RECIEVE_FILE_ERROR;
     if(!send_message(c,"Descriptor del archivo recibido, verificando si ya existe una version con el mismo hash...")) return MESAGGE_ERROR;
     //Se verifica si ya existe una versión con el mismo hash

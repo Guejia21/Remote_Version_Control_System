@@ -1,3 +1,14 @@
+/**
+ * @file utilities.c
+ * @author Jonathan David Guejia Burbano <jonathanguejia@unicauca.edu.co>
+ * @author Jhoan David Chacón Morán <jhoanchacon@unicauca.edu.co>
+ * @brief Impementación de utilidades
+ * @version 0.1
+ * @date 2024-10-28
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "utilities.h"
 #include <string.h>
 #include <stdlib.h>

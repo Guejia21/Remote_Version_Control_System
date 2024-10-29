@@ -1,3 +1,14 @@
+/**
+ * @file utilities.h
+ * @author Jonathan David Guejia Burbano <jonathanguejia@unicauca.edu.co>
+ * @author Jhoan David Chacón Morán <jhoanchacon@unicauca.edu.co>
+ * @brief Declaración de utilidades
+ * @version 0.1
+ * @date 2024-10-28
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #ifndef UTILITIES_H
 #define UTILITIES_H
 #include <stdio.h>
